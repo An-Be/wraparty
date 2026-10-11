@@ -191,6 +191,11 @@ person B; fewest links (movies) wins. Scored against par in tiers
 `TMDB_API_TOKEN` (server-only, TMDB "API Read Access Token"). `TMDB_API_BASE_URL`
 exists only to point local tests at a fake TMDB; never set it in production.
 
+`WRAPARTY_LIVE`: the launch switch (`src/lib/launch.ts`). Production shows the
+"crew is setting up" screen and 404s every game API route until it is `true`
+for Production in Vercel, followed by a redeploy. Local dev and preview deploys
+are always open, so seeding production doesn't launch the game by itself.
+
 ### Seeding
 
 `npm run seed -- --dry-run` resolves names in `scripts/seed/pairs.txt`, computes

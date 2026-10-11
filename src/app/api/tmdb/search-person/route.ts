@@ -3,10 +3,14 @@ import { getClientIp } from "@/lib/server/client-ip";
 import { badRequest, json, rejectCrossSite, tooManyRequests } from "@/lib/server/http";
 import { checkRateLimit } from "@/lib/server/rate-limit";
 import { searchPeople, tmdbUnavailable } from "@/lib/server/tmdb";
+import { rejectIfClosed } from "@/lib/server/launch";
 
 // Autocomplete proxy. The TMDB token stays on the server; the response carries
 // only id, name, thumbnail and department. Bodyless GET: same-site check only.
 export async function GET(req: Request) {
+  const closed = rejectIfClosed();
+  if (closed) return closed;
+
   const blocked = rejectCrossSite(req, { hasBody: false });
   if (blocked) return blocked;
 
