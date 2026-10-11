@@ -2,7 +2,14 @@
 // PostHog is optional: without both env vars it stays off and track() is a no-op.
 // See docs/modules/analytics-posthog.md.
 import posthog from "posthog-js";
+import { config as zodConfig } from "zod";
 import { redactEvent } from "@/lib/analytics";
+
+// Zod 4 probes for eval support (new Function in a try/catch) the first time an
+// object schema parses. The nonce CSP blocks it, so every page load logged a
+// script-src violation. Jitless mode skips the probe; client-side parsing here
+// is tiny, so the speed difference doesn't matter.
+zodConfig({ jitless: true });
 
 const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
 const host = process.env.NEXT_PUBLIC_POSTHOG_HOST;

@@ -153,5 +153,55 @@ npx prisma studio
 
 ## This tool
 
-Replace this section with what the tool does, its domain rules, its routes, its
-optional modules (see docs/modules/) and its documented exceptions.
+**WrapParty**: a daily movie-connection game. One pair of people per UTC day,
+same for everyone. Players chain person → movie → person until they reach
+person B; fewest links (movies) wins. Scored against par in tiers
+(Under par / Par / Over par). No login, no AI.
+
+### Domain rules
+
+- **Facts, not vibes.** A link counts when TMDB credits the person in the movie
+  as cast in a real role, or as director. Self/archive-footage appearances don't
+  count (`isCountableRole` in `src/lib/tmdb.ts`). Player validation uses full
+  credit lists; only par uses the bounded graph (top 20 movies per person,
+  top 15 billed cast + directors per movie).
+- **Par is computed once at seed time** (`scripts/seed-puzzles.ts`, bidirectional
+  BFS in `src/lib/par.ts`), never at runtime.
+- **Puzzle dates are append-only.** The seed script schedules new pairs after the
+  last scheduled date and refuses to overwrite one. When the list runs out,
+  `getPuzzleForDate` wraps through the list in date order (`wrappedIndex`).
+- **Playable dates** are today and yesterday (UTC), so a game started before
+  midnight can finish. No archive.
+- **Solves** are anonymous: one row per (date, deviceId), deviceId a random UUID
+  from localStorage. Links and tier are recomputed server-side from the
+  re-validated path. Streaks and stats live only in localStorage.
+- TMDB data is never stored, only cached briefly in Next's data cache. Only
+  curated pairs and solve aggregates live in Postgres.
+
+### Routes
+
+- `/` today's puzzle (server-rendered), chain builder, result screen
+- `GET /api/puzzle/today`
+- `GET /api/tmdb/search-person?q=`, `GET /api/tmdb/search-movie?q=` (proxy, rate limited)
+- `POST /api/puzzles/[date]/validate-step` `{fromPersonId, movieId}` or `{movieId, toPersonId}`
+- `POST /api/puzzles/[date]/solves` `{deviceId, path}`
+
+### Env
+
+`TMDB_API_TOKEN` (server-only, TMDB "API Read Access Token"). `TMDB_API_BASE_URL`
+exists only to point local tests at a fake TMDB; never set it in production.
+
+### Seeding
+
+`npm run seed -- --dry-run` resolves names in `scripts/seed/pairs.txt`, computes
+par and writes `scripts/.seed-report.json`. Drop `--dry-run` to schedule the
+keepers. Default TMDB budget is 40 requests / 10 s (`--rate`); responses are
+cached in `scripts/.tmdb-cache` so re-runs are cheap.
+
+### Documented exceptions
+
+- No secret links: `secretPathPrefixes` is empty and `site.indexable` is true.
+- TMDB images use plain `<img>` (`src/components/game/photo.tsx`): `next/image`
+  sets an inline style the nonce CSP blocks. `image.tmdb.org` is in `img-src`.
+- `src/instrumentation-client.ts` sets Zod to `jitless` so its eval probe doesn't
+  trip the CSP on every page load. Worth porting to tool-template.
