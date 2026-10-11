@@ -1,4 +1,4 @@
-# WrapParty curated pairs. One per line: Person A | Person B
+# Wraparty curated pairs. One per line: Person A | Person B
 # Pin an ambiguous name with a TMDB id: Chris Evans [16828] | Zendaya
 # The seed script resolves names, computes par and skips anything outside par 2-4.
 # Rule of thumb: a casual player should be able to name one movie for each person.

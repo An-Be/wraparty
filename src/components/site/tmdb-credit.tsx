@@ -1,6 +1,6 @@
 /**
  * TMDB attribution, required by section 3 of the TMDB API terms: the TMDB logo
- * (kept smaller than WrapParty's own mark) plus this exact notice. The logo is
+ * (kept smaller than Wraparty's own mark) plus this exact notice. The logo is
  * TMDB's official "blue short" mark, served from public/ as an image so its
  * gradient doesn't need inline styles (blocked by the nonce CSP).
  */

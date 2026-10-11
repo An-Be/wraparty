@@ -48,7 +48,7 @@ export function shareText({
   url?: string;
 }): string {
   const links = chain.filter((n) => n.kind === "movie").length;
-  const head = `WrapParty ${shareDateLabel(date)}: ${surname(personAName)} → ${surname(personBName)} in ${links} (par ${par}) ${emojiGrid(links, par)}`;
+  const head = `Wraparty ${shareDateLabel(date)}: ${surname(personAName)} → ${surname(personBName)} in ${links} (par ${par}) ${emojiGrid(links, par)}`;
   const path = chain.map(nodeLabel).join(" → ");
   return [head, path, url].filter(Boolean).join("\n");
 }

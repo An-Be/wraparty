@@ -37,7 +37,7 @@ describe("shareText", () => {
       url: "https://wraparty.example",
     });
     expect(text).toBe(
-      "WrapParty 10/09: Streep → Reeves in 1 (par 1) 🟩⬜⬜\nMeryl Streep → Movie X → Keanu Reeves\nhttps://wraparty.example",
+      "Wraparty 10/09: Streep → Reeves in 1 (par 1) 🟩⬜⬜\nMeryl Streep → Movie X → Keanu Reeves\nhttps://wraparty.example",
     );
   });
 });

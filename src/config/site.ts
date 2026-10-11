@@ -1,7 +1,7 @@
 // The one file to edit when spinning up a new tool from this template.
 // Everything user-facing that names the tool reads from here.
 export const site = {
-  name: "WrapParty",
+  name: "Wraparty",
   description: "Connect two people through the movies they made. One puzzle a day, same for everyone.",
   /** Shown in the footer. Keep it short. */
   tagline: "A new pair every day at midnight UTC.",

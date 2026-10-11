@@ -1,4 +1,4 @@
-// WrapParty mark: a clapperboard, the "that's a wrap" moment.
+// Wraparty mark: a clapperboard, the "that's a wrap" moment.
 // Inline SVG with currentColor so it inherits text color (next/image can't).
 export function Mark({ size = 28 }: { size?: number }) {
   return (
