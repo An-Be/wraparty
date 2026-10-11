@@ -34,3 +34,7 @@ next-env.d.ts
 
 # neon cli
 .neon
+
+# seed script cache and reports
+/scripts/.tmdb-cache
+/scripts/.seed-report.json

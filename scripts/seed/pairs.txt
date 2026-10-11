@@ -1,0 +1,240 @@
+# WrapParty curated pairs. One per line: Person A | Person B
+# Pin an ambiguous name with a TMDB id: Chris Evans [16828] | Zendaya
+# The seed script resolves names, computes par and skips anything outside par 2-4.
+# Rule of thumb: a casual player should be able to name one movie for each person.
+
+# --- Classic meets modern
+Meryl Streep | Keanu Reeves
+Audrey Hepburn | Julia Roberts
+Humphrey Bogart | Harrison Ford
+Marilyn Monroe | Margot Robbie
+James Dean | Ryan Gosling
+Cary Grant | George Clooney
+Katharine Hepburn | Cate Blanchett
+Grace Kelly | Anne Hathaway
+Marlon Brando | Leonardo DiCaprio
+Elizabeth Taylor | Angelina Jolie
+Jimmy Stewart | Tom Hanks
+Judy Garland | Lady Gaga
+Gene Kelly | Emma Stone
+Paul Newman | Brad Pitt
+Sidney Poitier | Denzel Washington
+Clint Eastwood | Pedro Pascal
+Sophia Loren | Penélope Cruz
+Steve McQueen | Tom Cruise
+Ingrid Bergman | Nicole Kidman
+Charlton Heston | Russell Crowe
+Bette Davis | Viola Davis
+Fred Astaire | Hugh Jackman
+Lauren Bacall | Scarlett Johansson
+Gregory Peck | Matt Damon
+Sean Connery | Daniel Craig
+Faye Dunaway | Florence Pugh
+Jack Lemmon | Jim Carrey
+Robert Redford | Chris Pratt
+Julie Andrews | Emily Blunt
+Dustin Hoffman | Timothée Chalamet
+
+# --- 80s and 90s favorites
+Tom Hanks | Bill Murray
+Julia Roberts | Matthew Broderick
+Bruce Willis | Kevin Bacon
+Arnold Schwarzenegger | Matt Damon
+Sylvester Stallone | Johnny Depp
+Whoopi Goldberg | Billy Crystal
+Michelle Pfeiffer | Anthony Hopkins
+Sigourney Weaver | Woody Harrelson
+Molly Ringwald | Whitney Houston
+Eddie Murphy | Michelle Yeoh
+Robin Williams | Steve Martin
+Winona Ryder | Danny Glover
+Meg Ryan | Brad Pitt
+Jodie Foster | Karen Allen
+Demi Moore | Christopher Lloyd
+Kevin Costner | Nicolas Cage
+Jamie Lee Curtis | Danny DeVito
+Goldie Hawn | Kris Kristofferson
+Mel Gibson | Owen Wilson
+Geena Davis | John Travolta
+Harrison Ford | Tom Cruise
+Michael J. Fox | Sandra Bullock
+Cher | Tommy Lee Jones
+Kathleen Turner | Sandra Bullock
+Wesley Snipes | Hugh Grant
+Gene Hackman | Samuel L. Jackson
+Uma Thurman | Danny DeVito
+Nicole Kidman | Jason Statham
+Keanu Reeves | Patrick Swayze
+Will Smith | Al Pacino
+
+# --- 2000s to now
+Leonardo DiCaprio | Steve Carell
+Natalie Portman | Ryan Reynolds
+Ryan Reynolds | Gwyneth Paltrow
+Jennifer Lawrence | Jake Gyllenhaal
+Zendaya | Emma Watson
+Timothée Chalamet | Orlando Bloom
+Margot Robbie | Christian Bale
+Emma Stone | Tom Hardy
+Chris Hemsworth | Adam Sandler
+Robert Downey Jr. | Kristen Wiig
+Anne Hathaway | Kevin Hart
+Daniel Radcliffe | Andrew Garfield
+Keira Knightley | Tom Hanks
+Amy Adams | Josh O'Connor
+Charlize Theron | Chris Hemsworth
+Jennifer Aniston | Nicolas Cage
+Melissa McCarthy | Jessica Chastain
+Dwayne Johnson | Michelle Yeoh
+Florence Pugh | Chadwick Boseman
+Austin Butler | Allison Williams
+Paul Mescal | Winona Ryder
+Anya Taylor-Joy | Glen Powell
+Pedro Pascal | Colin Farrell
+Oscar Isaac | Kate Winslet
+Ke Huy Quan | Mila Kunis
+Lupita Nyong'o | Hugh Jackman
+Daniel Kaluuya | Bradley Cooper
+Jenna Ortega | Tom Holland
+Sydney Sweeney | Saoirse Ronan
+Barry Keoghan | Ryan Gosling
+
+# --- Musicians who act
+Lady Gaga | George Clooney
+Harry Styles | Mila Kunis
+Rihanna | Steve Martin
+Elvis Presley | Chris Tucker
+Frank Sinatra | Will Ferrell
+David Bowie | Jamie Foxx
+Dolly Parton | Jack Black
+Jennifer Lopez | Taraji P. Henson
+Justin Timberlake | Steve Martin
+Queen Latifah | Bob Hope
+Ice Cube | Michael Jackson
+Mark Wahlberg | Mel Gibson
+Beyoncé | Barbra Streisand
+Mos Def | Meryl Streep
+Janelle Monáe | Martin Lawrence
+Selena Gomez | Margot Robbie
+Bing Crosby | Keanu Reeves
+Diana Ross | Russell Crowe
+Tina Turner | Cynthia Erivo
+Kris Kristofferson | Idris Elba
+Cher | Emily Blunt
+Will Smith | Zendaya
+Jared Leto | Austin Butler
+Common | Bradley Cooper
+Andre 3000 | Florence Pugh
+Ariana Grande | Sandra Bullock
+Taylor Swift | Ann-Margret
+Lin-Manuel Miranda | Marlon Brando
+Olivia Rodrigo | Jennifer Connelly
+Doja Cat | Jane Fonda
+
+# --- Directors (directing counts as a credit)
+Steven Spielberg | Lupita Nyong'o
+Martin Scorsese | Jeremy Renner
+Quentin Tarantino | Kim Novak
+Greta Gerwig | Tilda Swinton
+Christopher Nolan | Sigourney Weaver
+Sofia Coppola | Chris Hemsworth
+Spike Lee | Doug Jones
+Jordan Peele | Bill Murray
+Kathryn Bigelow | Kate Winslet
+Alfred Hitchcock | Johnny Depp
+Bong Joon-ho | Elijah Wood
+Ridley Scott | Oprah Winfrey
+Taika Waititi | Timothée Chalamet
+Guillermo del Toro | Al Pacino
+Wes Anderson | Jack Nicholson
+James Cameron | Michael B. Jordan
+Tim Burton | Morgan Freeman
+Peter Jackson | Tom Hanks
+Ava DuVernay | Gal Gadot
+Denis Villeneuve | Simon Pegg
+Francis Ford Coppola | Daniel Day-Lewis
+Stanley Kubrick | Emma Stone
+Ryan Coogler | Mahershala Ali
+Clint Eastwood | Tom Hanks
+Ron Howard | Robert De Niro
+Patty Jenkins | Samuel L. Jackson
+Edgar Wright | Saoirse Ronan
+Paul Thomas Anderson | Cillian Murphy
+Damien Chazelle | Scarlett Johansson
+Barry Jenkins | Denzel Washington
+
+# --- Latin American and Spanish stars
+Penélope Cruz | Ryan Gosling
+Salma Hayek | Josh Brolin
+Sofía Vergara | Chris Pratt
+John Leguizamo | Natalie Wood
+Gael García Bernal | Julia Roberts
+Diego Luna | George Clooney
+Oscar Isaac | Bruce Willis
+Eva Mendes | Vin Diesel
+Benicio del Toro | Daniel Craig
+Zoe Saldaña | Jennifer Lawrence
+Rita Moreno | Robert De Niro
+Anthony Quinn | Will Smith
+Andy García | Anjelica Huston
+Jessica Alba | Javier Bardem
+Michelle Rodriguez | Antonio Banderas
+Ana de Armas | Jennifer Aniston
+Edgar Ramírez | Patrick Swayze
+Danny Trejo | Diego Luna
+Rosario Dawson | Felicity Jones
+Raúl Juliá | Pedro Pascal
+
+# --- Comedy
+Will Ferrell | Kristen Wiig
+Steve Carell | Channing Tatum
+Tina Fey | Priscilla Presley
+Jim Carrey | David Spade
+Adam Sandler | Dana Carvey
+Ben Stiller | Anna Kendrick
+Seth Rogen | Zoe Kazan
+Maya Rudolph | Simu Liu
+Jonah Hill | John C. Reilly
+Leslie Nielsen | Paul Rudd
+Chris Farley | Amy Poehler
+Mike Myers | Jeff Daniels
+Rebel Wilson | Drew Barrymore
+Kumail Nanjiani | Owen Wilson
+Awkwafina | James Franco
+
+# --- Action and franchises
+Vin Diesel | Jason Statham
+Chris Evans | Chuck Norris
+Gal Gadot | Edward Furlong
+Jason Momoa | Mark Hamill
+Keanu Reeves | John Boyega
+Tom Cruise | Amy Adams
+Jackie Chan | Rachel McAdams
+Jet Li | Margot Robbie
+Bruce Lee | Keanu Reeves
+Linda Hamilton | Bruce Willis
+Carrie Fisher | Maggie Grace
+Daisy Ridley | Paul Walker
+Henry Cavill | Scarlett Johansson
+Benedict Cumberbatch | Chris Pine
+Idris Elba | Amber Heard
+Charlize Theron | Laurence Fishburne
+Milla Jovovich | Rebecca Ferguson
+Liam Neeson | Chris Tucker
+
+# --- Cross-era long shots (par 3-4 expected)
+Charlie Chaplin | Michael Douglas
+Shirley Temple | Robert Wagner
+Buster Keaton | Desi Arnaz
+Rita Hayworth | Margaret Dumont
+Orson Welles | Clark Gable
+Bette Midler | Errol Flynn
+Doris Day | John Garfield
+Kirk Douglas | Sidney Poitier
+Natalie Wood | Robert Downey Jr.
+Lucille Ball | Tom Holland
+Groucho Marx | Johnny Depp
+Vivien Leigh | Morgan Freeman
+Olivia de Havilland | Timothée Chalamet
+Lana Turner | Sarah Jessica Parker
+Spencer Tracy | Rock Hudson

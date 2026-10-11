@@ -27,8 +27,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
-      // Add every secret-link route prefix here (e.g. /p/:path* for a payer view).
-      { source: "/t/:path*", headers: privateHeaders },
+      // WrapParty has no secret-link pages. Add their prefixes here if that changes.
       { source: "/api/:path*", headers: privateHeaders },
     ];
   },

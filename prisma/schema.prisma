@@ -1,6 +1,5 @@
 // Prisma 7: the datasource URL lives in prisma.config.ts, not here.
 // The client is generated as TypeScript into src/lib/generated/prisma (gitignored).
-
 generator client {
   provider = "prisma-client"
   output   = "../src/lib/generated/prisma"
@@ -10,15 +9,46 @@ datasource db {
   provider = "postgresql"
 }
 
-// Example resource: a secret-link "space". Rename or replace it for your tool.
-// The token is the credential: 128-bit random, base62 (see src/lib/server/token.ts).
-// Never use cuid() or uuid() as a secret; they are identifiers, not credentials.
-model Space {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  title     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// One curated pair per UTC date. Written only by scripts/seed-puzzles.ts, which
+// appends new pairs after the last scheduled date, so past dates never change.
+// Person/movie/credit data is NOT stored: it comes live from TMDB.
+model Puzzle {
+  id          String   @id @default(cuid())
+  /// UTC date, yyyy-mm-dd.
+  date        String   @unique
+  personAId   Int
+  personAName String
+  personAImg  String?
+  personBId   Int
+  personBName String
+  personBImg  String?
+  /// Shortest known path in links (movies), computed once at seed time.
+  par         Int
+  createdAt   DateTime @default(now())
+  solves      Solve[]
+}
+
+enum VsPar {
+  UNDER
+  PAR
+  OVER
+}
+
+// Anonymous solve report: one row per device per date. deviceId is a random
+// UUID from the player's localStorage, not an account and not a credential.
+model Solve {
+  id       String   @id @default(cuid())
+  puzzleId String
+  puzzle   Puzzle   @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+  /// The UTC date played. Usually puzzle.date; differs only if the rotation wrapped.
+  date     String
+  deviceId String
+  links    Int
+  vsPar    VsPar
+  solvedAt DateTime @default(now())
+
+  @@unique([date, deviceId])
+  @@index([date])
 }
 
 // Fixed-window rate limiter (src/lib/server/rate-limit.ts). Keep this model in every tool.
