@@ -1,0 +1,32 @@
+// Prisma 7: the datasource URL lives in prisma.config.ts, not here.
+// The client is generated as TypeScript into src/lib/generated/prisma (gitignored).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Example resource: a secret-link "space". Rename or replace it for your tool.
+// The token is the credential: 128-bit random, base62 (see src/lib/server/token.ts).
+// Never use cuid() or uuid() as a secret; they are identifiers, not credentials.
+model Space {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Fixed-window rate limiter (src/lib/server/rate-limit.ts). Keep this model in every tool.
+model RateLimitHit {
+  key         String
+  windowStart DateTime
+  count       Int      @default(1)
+
+  @@unique([key, windowStart])
+  @@index([windowStart])
+}
