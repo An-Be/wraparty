@@ -2,32 +2,23 @@ import { Game } from "@/components/game/game";
 import { HeaderStreak } from "@/components/game/header-streak";
 import { PairHero } from "@/components/game/pair-hero";
 import { SiteFooter } from "@/components/site/site-footer";
+import { SettingUp } from "@/components/site/setting-up";
 import { SiteHeader } from "@/components/site/site-header";
 import { TmdbCredit } from "@/components/site/tmdb-credit";
 import { Shell } from "@/components/ui/shell";
 import type { PuzzleProps } from "@/lib/chain";
 import { utcDateKey } from "@/lib/dates";
+import { gameIsOpen } from "@/lib/server/launch";
 import { getAggregates, getPuzzleForDate } from "@/lib/server/puzzles";
 
 export default async function Home() {
+  // Before launch, production shows the setting-up screen without touching the database.
+  if (!gameIsOpen()) return <SettingUp />;
+
   const today = utcDateKey();
   const puzzle = await getPuzzleForDate(today);
 
-  if (!puzzle) {
-    return (
-      <>
-        <SiteHeader />
-        <Shell>
-          <main className="flex flex-1 flex-col justify-center gap-4 py-10">
-            <p className="label text-mute">No pair today</p>
-            <h1 className="display text-5xl">The crew is setting up.</h1>
-            <p className="text-sm text-mute">Today&apos;s puzzle isn&apos;t ready yet. Check back soon.</p>
-          </main>
-          <SiteFooter />
-        </Shell>
-      </>
-    );
-  }
+  if (!puzzle) return <SettingUp />;
 
   // Pass only what the game needs across the server/client boundary.
   const props: PuzzleProps = {

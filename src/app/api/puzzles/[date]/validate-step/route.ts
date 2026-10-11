@@ -5,12 +5,16 @@ import { json, notFound, parseJsonBody, rejectCrossSite, tooManyRequests } from 
 import { checkRateLimit } from "@/lib/server/rate-limit";
 import { tmdbUnavailable } from "@/lib/server/tmdb";
 import { validateStep } from "@/lib/server/validate";
+import { rejectIfClosed } from "@/lib/server/launch";
 
 type Ctx = { params: Promise<{ date: string }> };
 
 // Checks one link against TMDB credits. Writes nothing, but each call can cost a
 // TMDB request, so it gets the full mutating-route treatment.
 export async function POST(req: Request, { params }: Ctx) {
+  const closed = rejectIfClosed();
+  if (closed) return closed;
+
   const blocked = rejectCrossSite(req);
   if (blocked) return blocked;
 

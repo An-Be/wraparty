@@ -9,6 +9,7 @@ import { getAggregates, getPuzzleForDate } from "@/lib/server/puzzles";
 import { checkRateLimit } from "@/lib/server/rate-limit";
 import { tmdbUnavailable } from "@/lib/server/tmdb";
 import { validatePath } from "@/lib/server/validate";
+import { rejectIfClosed } from "@/lib/server/launch";
 
 type Ctx = { params: Promise<{ date: string }> };
 
@@ -16,6 +17,9 @@ type Ctx = { params: Promise<{ date: string }> };
 // aggregates. Links and tier are computed here from the re-validated path, never
 // taken from the client.
 export async function POST(req: Request, { params }: Ctx) {
+  const closed = rejectIfClosed();
+  if (closed) return closed;
+
   const blocked = rejectCrossSite(req);
   if (blocked) return blocked;
 
