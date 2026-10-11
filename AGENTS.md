@@ -153,7 +153,7 @@ npx prisma studio
 
 ## This tool
 
-**WrapParty**: a daily movie-connection game. One pair of people per UTC day,
+**Wraparty**: a daily movie-connection game. One pair of people per UTC day,
 same for everyone. Players chain person → movie → person until they reach
 person B; fewest links (movies) wins. Scored against par in tiers
 (Under par / Par / Over par). No login, no AI.

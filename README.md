@@ -1,4 +1,4 @@
-# WrapParty
+# Wraparty
 
 A daily movie-connection game. One pair of people a day, same for everyone:
 connect Meryl Streep to Keanu Reeves through movies they were in, in as few

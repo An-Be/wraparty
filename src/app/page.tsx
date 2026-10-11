@@ -45,7 +45,7 @@ export default async function Home() {
       <Shell>
         <main className="flex flex-1 flex-col gap-10 py-8">
           <h1 className="sr-only">
-            WrapParty: connect {puzzle.personA.name} to {puzzle.personB.name}
+            Wraparty: connect {puzzle.personA.name} to {puzzle.personB.name}
           </h1>
           <PairHero puzzle={props} />
           <Game puzzle={props} initialAggregates={aggregates} />
