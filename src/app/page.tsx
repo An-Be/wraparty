@@ -1,4 +1,5 @@
 import { ModeCard } from "@/components/hub/mode-card";
+import { Shelf } from "@/components/hub/shelf";
 import { SettingUp } from "@/components/site/setting-up";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -36,6 +37,7 @@ export default async function Hub() {
               ))}
             </ul>
           </section>
+          <Shelf n="02" />
         </main>
         <SiteFooter />
       </Shell>
