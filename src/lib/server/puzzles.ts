@@ -73,7 +73,7 @@ export type ModeCard = {
   name: string;
   tagline: string;
   status: "LIVE" | "SOON";
-  /** "live", "tuning up", "in rehearsal". */
+  /** "live", "coming soon". */
   statusLabel: string;
   entityLabel: string;
   edgeLabel: string;

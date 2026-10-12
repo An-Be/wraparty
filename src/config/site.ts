@@ -2,7 +2,7 @@
 // Everything user-facing that names the tool reads from here.
 export const site = {
   name: "Wraparty",
-  description: "A new game every day. Connect two people through the movies they made, with more games on the way.",
+  description: "A new game every day. Connect two people through the movies they made or were in, with more games on the way.",
   /** Shown in the footer. Keep it short. */
   tagline: "New pairs every day at midnight UTC.",
   /** The brand line: hub headline and share-card copy. */

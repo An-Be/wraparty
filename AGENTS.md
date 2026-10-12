@@ -154,8 +154,8 @@ npx prisma studio
 ## This tool
 
 **Wraparty**: a daily connection-games arcade. The hub at `/` lists game modes;
-each live mode plays at `/[mode]` (Movies is live; Music and Sports show
-"coming soon" cards, which double as a signal for what to build next). One pair per mode per UTC day, same for everyone. Players chain
+each live mode plays at `/[mode]` (Movies is live; Music, Art and Anime
+show "coming soon" cards, which double as a signal for what to build next). One pair per mode per UTC day, same for everyone. Players chain
 entity → via → entity until they reach the target; fewest links (vias) wins.
 Scored against par in tiers (Under par / Par / Over par). No login, no AI.
 
@@ -222,6 +222,23 @@ par and writes `scripts/.seed-report.json`. Drop `--dry-run` to schedule the
 keepers. Default TMDB budget is 40 requests / 10 s (`--rate`); responses are
 cached in `scripts/.tmdb-cache` so re-runs are cheap.
 
+### Seed guidance
+
+Every puzzle should be startable by a casual player, and par 2 to 4 is the sweet
+spot (par 1 is trivial, par 5+ is a slog). Same par range for every mode.
+
+- **Movies:** about 200 pairs to start, mixing eras, genres and industries
+  (actors, directors, musicians who act). Skip pairs where one person is obscure
+  enough that most players can't name a single movie of theirs.
+- **Music (later):** artists through features, band memberships and shared
+  producers, from MusicBrainz relationships. Skip artists with no verifiable
+  collaborations.
+- **Art (later):** artists through shared movements, teacher-student links and
+  galleries, from Wikidata. Favor movements over teachers: more edges, better pars.
+- **Anime (later):** voice actors through shared shows, or shows through shared
+  studios, from AniList. Use original-language credits so dubs vs subs is never
+  ambiguous.
+
 ### Documented exceptions
 
 - No secret links: `secretPathPrefixes` is empty and `site.indexable` is true.
@@ -231,7 +248,7 @@ cached in `scripts/.tmdb-cache` so re-runs are cheap.
   never reads as a button.
 - The footer has no author line (no name or portfolio link on Wraparty).
 - Voice: playful but brief, no em dashes. Mode cards read "Movies · live",
-  "Music · tuning up" (`GameMode.statusLabel`). Every mode ends on the same
+  "Music · coming soon" (`GameMode.statusLabel`). Every mode ends on the same
   sign-off: "That's a wrap for today. See you tomorrow."
 - TMDB images use plain `<img>` (`src/components/game/photo.tsx`): `next/image`
   sets an inline style the nonce CSP blocks. `image.tmdb.org` is in `img-src`.

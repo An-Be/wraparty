@@ -5,7 +5,7 @@ import type { ModeCard as ModeCardData } from "@/lib/server/puzzles";
 import { cn } from "@/lib/utils";
 
 /**
- * One game on the hub: "Movies · live", "Music · tuning up". Live modes link to
+ * One game on the hub: "Movies · live", "Music · coming soon". Live modes link to
  * today's puzzle; the rest are honest coming-soon cards.
  */
 export function ModeCard({ mode, n, today }: { mode: ModeCardData; n: number; today: string }) {

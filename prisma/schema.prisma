@@ -26,7 +26,7 @@ model GameMode {
   /// One line for the hub card.
   tagline     String
   status      ModeStatus
-  /// Card copy after the name: "live", "tuning up", "in rehearsal".
+  /// Card copy after the name: "live", "coming soon".
   statusLabel String
   /// What the endpoints are, singular: "person".
   entityLabel String
