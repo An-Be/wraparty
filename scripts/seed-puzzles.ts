@@ -1,4 +1,6 @@
-// Seeds daily puzzles from the curated list (M1).
+// Seeds the Movies mode's daily puzzles from the curated list. Each mode has
+// its own seed script (its source, its graph); they all write Puzzle rows
+// scoped to their GameMode.
 //
 //   npx tsx scripts/seed-puzzles.ts --dry-run     # resolve names + compute par, write nothing
 //   npx tsx scripts/seed-puzzles.ts               # append the keepers as new daily puzzles
@@ -6,7 +8,7 @@
 // For each pair: resolve both names on TMDB, run a bidirectional BFS over the
 // bounded credit graph (top-20 movies per person, top-15 cast per movie) to get
 // par, keep pairs with par in [--min-par, --max-par], then schedule them on the
-// next free UTC dates after the last scheduled puzzle. Existing dates are never
+// next free UTC dates after Movies' last scheduled puzzle. Existing dates are never
 // touched, and a pair that's already scheduled (either order) is skipped.
 //
 // Needs TMDB_API_TOKEN, plus DIRECT_URL (or DATABASE_URL) unless --dry-run.
@@ -50,6 +52,7 @@ const { values: args } = parseArgs({
   },
 });
 
+const MODE_SLUG = "movies";
 const MIN_PAR = Number(args["min-par"]);
 const MAX_PAR = Number(args["max-par"]);
 const BUDGET = Number(args.budget);
@@ -190,8 +193,13 @@ async function main() {
   if (!dryRun && !connectionString) fail("DIRECT_URL (or DATABASE_URL) is not set. Use --dry-run to only compute par.");
   const db = connectionString ? new PrismaClient({ adapter: new PrismaPg({ connectionString, max: 2 }) }) : null;
 
-  const existing = db ? await db.puzzle.findMany({ select: { date: true, personAId: true, personBId: true } }) : [];
-  const scheduled = new Set(existing.map((p) => pairKey(p.personAId, p.personBId)));
+  const mode = db ? await db.gameMode.findUnique({ where: { slug: MODE_SLUG }, select: { id: true } }) : null;
+  if (db && !mode) fail(`No GameMode row for "${MODE_SLUG}". Apply the migrations first.`);
+  const existing =
+    db && mode
+      ? await db.puzzle.findMany({ where: { modeId: mode.id }, select: { date: true, entityAId: true, entityBId: true } })
+      : [];
+  const scheduled = new Set(existing.map((p) => pairKey(Number(p.entityAId), Number(p.entityBId))));
   const lastDate = existing.map((p) => p.date).sort().at(-1);
 
   if (args.start && !isDateKey(args.start)) fail("--start must be yyyy-mm-dd");
@@ -244,7 +252,7 @@ async function main() {
   await writeFile("scripts/.seed-report.json", JSON.stringify(report, null, 2));
   console.log(`\nseed: ${keep.length} of ${todo.length} pairs kept, ${requests} TMDB requests. Report: scripts/.seed-report.json`);
 
-  if (dryRun || !db) {
+  if (dryRun || !db || !mode) {
     console.log("seed: dry run, nothing written.");
     await db?.$disconnect();
     return;
@@ -252,14 +260,15 @@ async function main() {
   if (keep.length) {
     await db.puzzle.createMany({
       data: keep.map(({ date, a, b, par }) => ({
+        modeId: mode.id,
         date,
         par,
-        personAId: a.id,
-        personAName: a.name,
-        personAImg: a.img,
-        personBId: b.id,
-        personBName: b.name,
-        personBImg: b.img,
+        entityAId: String(a.id),
+        entityAName: a.name,
+        entityAImg: a.img,
+        entityBId: String(b.id),
+        entityBName: b.name,
+        entityBImg: b.img,
       })),
     });
     console.log(`seed: scheduled ${keep[0].date} through ${keep.at(-1)!.date}.`);

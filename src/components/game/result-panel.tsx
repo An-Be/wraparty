@@ -8,8 +8,8 @@ import { shareText, tierCopy, tierFor } from "@/lib/scoring";
 import { toast } from "@/lib/toast";
 import { track } from "@/lib/track";
 import { cn } from "@/lib/utils";
-import { Countdown } from "./countdown";
 import type { DailyAggregates } from "@/lib/solve-types";
+import { Countdown } from "./countdown";
 
 /** The share grid as squares: ink up to par, outlined past it, dashed for room left. */
 function Squares({ links, par }: { links: number; par: number }) {
@@ -39,10 +39,13 @@ function aggregateLine(a: DailyAggregates | null): string {
 
 export function ResultPanel({
   puzzle,
+  modeName,
   chain,
   aggregates,
 }: {
   puzzle: PuzzleProps;
+  /** "Movies", for the share line. */
+  modeName: string;
   chain: readonly ChainNode[];
   aggregates: DailyAggregates | null;
 }) {
@@ -52,15 +55,16 @@ export function ResultPanel({
 
   async function share() {
     const text = shareText({
+      modeName,
       date: puzzle.date,
-      personAName: puzzle.personA.name,
-      personBName: puzzle.personB.name,
+      entityAName: puzzle.entityA.name,
+      entityBName: puzzle.entityB.name,
       par: puzzle.par,
       chain,
-      url: window.location.origin,
+      url: `${window.location.origin}/${puzzle.mode}`,
     });
     const ok = await copyToClipboard(text);
-    track("result_shared", { copied: ok, tier });
+    track("result_shared", { mode: puzzle.mode, copied: ok, tier });
     if (ok) toast("Copied. Paste it anywhere.");
     else toast.error("Couldn't copy. Try again.");
   }
@@ -79,9 +83,12 @@ export function ResultPanel({
         Share result
       </Button>
       <p className="text-sm text-mute">{aggregateLine(aggregates)}</p>
-      <div className="flex items-baseline justify-between gap-4 border-t border-ink pt-4">
-        <span className="label text-mute">Next pair in</span>
-        <Countdown date={puzzle.date} />
+      <div className="flex flex-col gap-2 border-t border-ink pt-4">
+        <p className="display text-xl">That&apos;s a wrap for today. See you tomorrow.</p>
+        <div className="flex items-baseline justify-between gap-4">
+          <span className="label text-mute">Next pair in</span>
+          <Countdown date={puzzle.date} />
+        </div>
       </div>
     </section>
   );

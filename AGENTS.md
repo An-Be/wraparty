@@ -153,38 +153,58 @@ npx prisma studio
 
 ## This tool
 
-**Wraparty**: a daily movie-connection game. One pair of people per UTC day,
-same for everyone. Players chain person → movie → person until they reach
-person B; fewest links (movies) wins. Scored against par in tiers
-(Under par / Par / Over par). No login, no AI.
+**Wraparty**: a daily connection-games arcade. The hub at `/` lists game modes;
+each live mode plays at `/[mode]` (Movies is live). Modes that aren't live
+(Music, Art, Anime are planned) are never named on the site: the hub just says
+"More coming soon." and their URLs 404. One pair per mode per UTC day, same for everyone. Players chain
+entity → via → entity until they reach the target; fewest links (vias) wins.
+Scored against par in tiers (Under par / Par / Over par). No login, no AI.
 
-### Domain rules
+### Modes
+
+- The engine is mode-agnostic: `src/lib/chain.ts` works on `ChainNode
+  {kind: "entity" | "via", id: string, ...}`. In Movies, entities are people
+  and vias are movies.
+- A mode is: a `GameMode` row (slug, name, tagline, status LIVE/SOON), client
+  copy in `src/modes/<slug>.ts` (registered in `src/modes/index.ts`), a server
+  adapter in `src/lib/server/modes/<slug>.ts` (search, validateStep,
+  validatePath; registered in `src/lib/server/modes/index.ts`), its source's
+  credit in `src/components/site/mode-credit.tsx`, and a seed script.
+- A mode is playable only when it has an adapter **and** its row is LIVE
+  (`getLiveMode`). Every game API route takes `?mode=` and 404s otherwise.
+- Source failures throw a `SourceError` subclass; routes answer one generic 503
+  (`sourceUnavailable`).
+
+### Domain rules (Movies)
 
 - **Facts, not vibes.** A link counts when TMDB credits the person in the movie
   as cast in a real role, or as director. Self/archive-footage appearances don't
   count (`isCountableRole` in `src/lib/tmdb.ts`). Player validation uses full
   credit lists; only par uses the bounded graph (top 20 movies per person,
   top 15 billed cast + directors per movie).
-- **Par is computed once at seed time** (`scripts/seed-puzzles.ts`, bidirectional
-  BFS in `src/lib/par.ts`), never at runtime.
-- **Puzzle dates are append-only.** The seed script schedules new pairs after the
-  last scheduled date and refuses to overwrite one. When the list runs out,
-  `getPuzzleForDate` wraps through the list in date order (`wrappedIndex`).
+- **Par is computed once at seed time** (`scripts/seed-puzzles.ts`, the Movies
+  seeder; bidirectional BFS in `src/lib/par.ts`), never at runtime.
+- **Puzzle dates are append-only per mode** (`@@unique([modeId, date])`). The
+  seed script schedules new pairs after the mode's last scheduled date and
+  refuses to overwrite one. When a mode's list runs out, `getPuzzleForDate`
+  wraps through it in date order (`wrappedIndex`).
 - **Playable dates** are today and yesterday (UTC), so a game started before
   midnight can finish. No archive.
-- **Solves** are anonymous: one row per (date, deviceId), deviceId a random UUID
-  from localStorage. Links and tier are recomputed server-side from the
-  re-validated path. Streaks and stats live only in localStorage.
+- **Solves** are anonymous: one row per (mode, date, deviceId), deviceId a
+  random UUID from localStorage. Links and tier are recomputed server-side from
+  the re-validated path. Streaks and stats live only in localStorage, per mode
+  (`wraparty:<mode>:stats`; Movies falls back to the pre-modes `wraparty:stats`).
 - TMDB data is never stored, only cached briefly in Next's data cache. Only
-  curated pairs and solve aggregates live in Postgres.
+  curated pairs, modes and solve aggregates live in Postgres.
 
 ### Routes
 
-- `/` today's puzzle (server-rendered), chain builder, result screen
-- `GET /api/puzzle/today`
-- `GET /api/tmdb/search-person?q=`, `GET /api/tmdb/search-movie?q=` (proxy, rate limited)
-- `POST /api/puzzles/[date]/validate-step` `{fromPersonId, movieId}` or `{movieId, toPersonId}`
-- `POST /api/puzzles/[date]/solves` `{deviceId, path}`
+- `/` hub (live modes plus "More coming soon."); `/[mode]` today's puzzle
+  (server-rendered), chain builder, result screen; 404 for any mode not live
+- `GET /api/puzzle/today?mode=`
+- `GET /api/search?mode=&kind=entity|via&q=` (rate limited)
+- `POST /api/puzzles/[date]/validate-step?mode=` `{fromEntityId, viaId}` or `{viaId, toEntityId}`
+- `POST /api/puzzles/[date]/solves?mode=` `{deviceId, path}`
 
 ### Env
 
@@ -203,9 +223,35 @@ par and writes `scripts/.seed-report.json`. Drop `--dry-run` to schedule the
 keepers. Default TMDB budget is 40 requests / 10 s (`--rate`); responses are
 cached in `scripts/.tmdb-cache` so re-runs are cheap.
 
+### Seed guidance
+
+Every puzzle should be startable by a casual player, and par 2 to 4 is the sweet
+spot (par 1 is trivial, par 5+ is a slog). Same par range for every mode.
+
+- **Movies:** about 200 pairs to start, mixing eras, genres and industries
+  (actors, directors, musicians who act). Skip pairs where one person is obscure
+  enough that most players can't name a single movie of theirs.
+- **Music (later):** artists through features, band memberships and shared
+  producers, from MusicBrainz relationships. Skip artists with no verifiable
+  collaborations.
+- **Art (later):** artists through shared movements, teacher-student links and
+  galleries, from Wikidata. Favor movements over teachers: more edges, better pars.
+- **Anime (later):** voice actors through shared shows, or shows through shared
+  studios, from AniList. Use original-language credits so dubs vs subs is never
+  ambiguous.
+
 ### Documented exceptions
 
 - No secret links: `secretPathPrefixes` is empty and `site.indexable` is true.
+- Brand color: marquee red (`marquee` / `on-marquee` tokens) for the mark, calls
+  to action (the primary Button) and the daily puzzle number, nothing else.
+  `error` is a darker red in light mode and a paler one in dark mode so an error
+  never reads as a button.
+- The footer has no author line and no links to sibling apps (no name or
+  portfolio link on Wraparty; other apps would read as more games).
+- Voice: playful but brief, no em dashes. The live mode card reads "Movies · live"
+  (`GameMode.statusLabel`). Every mode ends on the same
+  sign-off: "That's a wrap for today. See you tomorrow."
 - TMDB images use plain `<img>` (`src/components/game/photo.tsx`): `next/image`
   sets an inline style the nonce CSP blocks. `image.tmdb.org` is in `img-src`.
 - `src/instrumentation-client.ts` sets Zod to `jitless` so its eval probe doesn't

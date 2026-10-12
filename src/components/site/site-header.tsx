@@ -12,7 +12,7 @@ export function SiteHeader({ right }: { right?: ReactNode }) {
   return (
     <header className="flex items-center justify-between gap-4 border-b border-rule px-4 py-3">
       <Link href="/" className="flex items-center gap-2 font-display text-sm font-medium uppercase tracking-tight">
-        <Mark size={22} />
+        <Mark height={22} />
         {site.name}
       </Link>
       {right ? (

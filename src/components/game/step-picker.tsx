@@ -5,41 +5,42 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api-client";
-import { nextKind, repeatReason, type ChainNode, type ValidateStepResult } from "@/lib/chain";
-import { SEARCH_MAX, SEARCH_MIN, type MovieResult, type PersonResult } from "@/lib/search-schema";
+import { linksOf, nextKind, repeatReason, type ChainNode, type ValidateStepResult } from "@/lib/chain";
+import { SEARCH_MAX, SEARCH_MIN, type SearchResult } from "@/lib/search-schema";
+import type { ModeCopy } from "@/modes/types";
 import { track } from "@/lib/track";
 import { cn } from "@/lib/utils";
 import { Photo } from "./photo";
 
-type Option =
-  | { kind: "movie"; id: number; label: string; sub: string | null; img: string | null }
-  | { kind: "person"; id: number; label: string; sub: string | null; img: string | null };
+type Option = SearchResult & { kind: ChainNode["kind"] };
 
 const DEBOUNCE_MS = 250;
 
-function rejection(current: ChainNode, option: Option, code: "not-credited" | "not-a-role"): string {
-  const who = current.kind === "person" ? current.name : option.label;
-  const what = current.kind === "person" ? `${option.label}${option.sub ? ` (${option.sub})` : ""}` : current.title;
-  if (code === "not-a-role") return `${who} only appears as themselves in ${what}. That doesn't count as a link.`;
-  if (current.kind === "person") {
-    return `${current.name} isn't credited in ${option.label}${option.sub ? ` (${option.sub})` : ""}. Acting or directing only.`;
-  }
-  return `${option.label} isn't credited in ${current.title}. Acting or directing only.`;
+/** "Hook (1991)": a via with its qualifier, for rejection messages. */
+function viaLabel(via: { name: string; meta: string | null }): string {
+  return via.meta ? `${via.name} (${via.meta})` : via.name;
 }
 
 /**
- * Autocomplete for the next link. Searches TMDB through our proxy, then asks the
- * server to check the pick against real credits before it joins the chain.
+ * Autocomplete for the next link. Searches the mode's source through our API,
+ * then asks the server to check the pick against real facts before it joins
+ * the chain. All wording comes from the mode's copy.
  */
 export function StepPicker({
+  copy,
   date,
   chain,
+  targetId,
   onPicked,
   onBack,
 }: {
+  copy: ModeCopy;
   date: string;
   chain: readonly ChainNode[];
-  onPicked: (node: ChainNode) => void;
+  /** Today's target: picking a via they're part of ends the game. */
+  targetId: string;
+  /** One node, or a via plus the target when that via finishes the chain. */
+  onPicked: (nodes: ChainNode[]) => void;
   onBack: () => void;
 }) {
   const current = chain.at(-1)!;
@@ -56,8 +57,25 @@ export function StepPicker({
   const seq = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const label = current.kind === "person" ? `Pick a movie ${current.name} was in` : `Who else is in ${current.title}?`;
+  const label = current.kind === "entity" ? copy.pickVia(current.name) : copy.pickEntity(current.name);
+  const withMode = (path: string) => `${path}?mode=${encodeURIComponent(copy.slug)}`;
   const open = query.trim().length >= SEARCH_MIN && (options.length > 0 || searched !== null);
+
+  /**
+   * Shows why a pick didn't count. Closes the dropdown first: it sits over the
+   * message, which made a rejected pick look like a click that did nothing.
+   * The typed text stays, selected, so the next search is one keystroke away.
+   */
+  function showError(message: string) {
+    seq.current++;
+    setOptions([]);
+    setSearched(null);
+    setSearching(false);
+    setActive(-1);
+    setError(message);
+    // After the re-render that re-enables the input (it's disabled while checking).
+    requestAnimationFrame(() => inputRef.current?.select());
+  }
 
   function reset() {
     seq.current++;
@@ -71,10 +89,10 @@ export function StepPicker({
 
   async function runSearch(q: string) {
     const id = ++seq.current;
-    const res =
-      kind === "movie"
-        ? await api<{ results: MovieResult[] }>(`/api/tmdb/search-movie?q=${encodeURIComponent(q)}`, { method: "GET" })
-        : await api<{ results: PersonResult[] }>(`/api/tmdb/search-person?q=${encodeURIComponent(q)}`, { method: "GET" });
+    const res = await api<{ results: SearchResult[] }>(
+      `${withMode("/api/search")}&kind=${kind}&q=${encodeURIComponent(q)}`,
+      { method: "GET" },
+    );
     if (id !== seq.current) return; // a newer keystroke won
     setSearching(false);
     if (!res.ok) {
@@ -83,11 +101,7 @@ export function StepPicker({
       setError(res.error);
       return;
     }
-    const next: Option[] = res.data.results.map((r) =>
-      "title" in r
-        ? { kind: "movie", id: r.id, label: r.title, sub: r.year ? String(r.year) : null, img: r.img }
-        : { kind: "person", id: r.id, label: r.name, sub: r.dept, img: r.img },
-    );
+    const next: Option[] = res.data.results.map((r) => ({ ...r, kind }));
     setOptions(next);
     setSearched(q);
     setActive(next.length ? 0 : -1);
@@ -112,30 +126,50 @@ export function StepPicker({
 
   async function pick(option: Option) {
     if (checking) return;
-    const repeat = repeatReason(chain, option);
+    const repeat = repeatReason(chain, option, copy.labels);
     if (repeat) {
-      setError(repeat);
+      showError(repeat);
       return;
     }
     setChecking(true);
     setError(null);
     const body =
-      current.kind === "person" ? { fromPersonId: current.id, movieId: option.id } : { movieId: current.id, toPersonId: option.id };
-    const res = await api<ValidateStepResult>(`/api/puzzles/${date}/validate-step`, { method: "POST", body });
-    setChecking(false);
+      current.kind === "entity" ? { fromEntityId: current.id, viaId: option.id } : { viaId: current.id, toEntityId: option.id };
+    const res = await api<ValidateStepResult>(withMode(`/api/puzzles/${date}/validate-step`), { method: "POST", body });
     if (!res.ok) {
-      setError(res.error);
+      setChecking(false);
+      showError(res.error);
       return;
     }
     if (!res.data.valid) {
-      track("step_rejected", { kind: option.kind, code: res.data.code });
-      setError(res.data.code === "not-found" ? res.data.reason : rejection(current, option, res.data.code));
+      setChecking(false);
+      track("step_rejected", { mode: copy.slug, kind: option.kind, code: res.data.code });
+      if (res.data.code === "not-found") {
+        showError(res.data.reason);
+        return;
+      }
+      const [entity, via] = current.kind === "entity" ? [current, option] : [option, current];
+      showError(copy.rejected(res.data.code, entity.name, viaLabel(via)));
       return;
     }
-    track("step_added", { kind: option.kind, links: chain.filter((n) => n.kind === "movie").length + (option.kind === "movie" ? 1 : 0) });
+    track("step_added", { mode: copy.slug, kind: option.kind, links: linksOf(chain) + (option.kind === "via" ? 1 : 0) });
+    const picked = res.data.node;
+    // Picking a via the target is part of finishes the chain: naming them would
+    // be a step with only one right answer. Checked against the same facts; if
+    // the check fails for any reason, the game just carries on as before.
+    const finish = picked.kind === "via" ? await targetIn(picked.id) : null;
+    setChecking(false);
     reset();
-    onPicked(res.data.node);
+    onPicked(finish ? [picked, finish] : [picked]);
     inputRef.current?.focus();
+  }
+
+  async function targetIn(viaId: string): Promise<ChainNode | null> {
+    const res = await api<ValidateStepResult>(withMode(`/api/puzzles/${date}/validate-step`), {
+      method: "POST",
+      body: { viaId, toEntityId: targetId },
+    });
+    return res.ok && res.data.valid ? res.data.node : null;
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -161,7 +195,7 @@ export function StepPicker({
         htmlFor="step"
         label={label}
         error={error}
-        hint={checking ? "Checking the credits…" : kind === "movie" ? "Search any movie." : "Search any actor or director."}
+        hint={checking ? "Checking…" : copy.hint[kind]}
       >
         <div className="relative">
           <Input
@@ -182,7 +216,7 @@ export function StepPicker({
             autoCorrect="off"
             spellCheck={false}
             enterKeyHint="search"
-            placeholder={kind === "movie" ? "Search movies" : "Search people"}
+            placeholder={copy.placeholder[kind]}
             disabled={checking}
           />
           {open ? (
@@ -198,14 +232,14 @@ export function StepPicker({
                   onClick={() => void pick(o)}
                   className={cn("flex cursor-pointer items-center gap-3 px-3 py-2", i === active && "bg-wash")}
                 >
-                  <Photo src={o.img} alt={o.label} className="h-12 w-8 shrink-0 text-[10px]" />
+                  <Photo src={o.img} alt={o.name} className="h-12 w-8 shrink-0 text-[10px]" />
                   <span className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm text-ink">{o.label}</span>
-                    {o.sub ? <span className="label text-mute">{o.sub}</span> : null}
+                    <span className="truncate text-sm text-ink">{o.name}</span>
+                    {o.meta ? <span className="label text-mute">{o.meta}</span> : null}
                   </span>
                 </li>
               ))}
-              {!options.length && !searching ? <li className="px-3 py-3 text-sm text-mute">No matches on TMDB.</li> : null}
+              {!options.length && !searching ? <li className="px-3 py-3 text-sm text-mute">{copy.noMatches}</li> : null}
             </ul>
           ) : null}
         </div>

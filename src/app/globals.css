@@ -14,6 +14,15 @@
   /* Hairline for site chrome (the header rule). Content borders stay ink. */
   --color-rule: #e5e5e5;
   --color-line: #000000;
+  /*
+    Marquee red: the brand's one accent. Reserved for the mark, calls to
+    action and the daily puzzle number. Text on it uses on-marquee.
+  */
+  --color-marquee: #d7261e;
+  --color-on-marquee: #ffffff;
+  /* Errors only (rejected input, failed actions). Darker than marquee so an
+     error never reads as a button. */
+  --color-error: #9b1c15;
   --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   --radius-xs: 0px;
@@ -37,6 +46,10 @@
     --color-wash: #1c1c1c;
     --color-rule: #262626;
     --color-line: #f2f2f2;
+    --color-marquee: #ff4d40;
+    --color-on-marquee: #0b0b0b;
+    /* Paler than marquee here, so the two stay apart on a dark ground. */
+    --color-error: #ff9d94;
   }
 }
 

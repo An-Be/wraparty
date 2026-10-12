@@ -9,23 +9,57 @@ datasource db {
   provider = "postgresql"
 }
 
-// One curated pair per UTC date. Written only by scripts/seed-puzzles.ts, which
-// appends new pairs after the last scheduled date, so past dates never change.
-// Person/movie/credit data is NOT stored: it comes live from TMDB.
+enum ModeStatus {
+  LIVE
+  SOON
+}
+
+// One game in the arcade (movies, music, art, anime). Rows are added by a
+// migration when a mode is planned; flipping status to LIVE (with its adapter
+// and seeded puzzles in place) opens it. The engine never names a mode in code
+// outside src/modes/ and src/lib/server/modes/.
+model GameMode {
+  id          String     @id
+  /// URL segment and share-text key: /movies.
+  slug        String     @unique
+  name        String
+  /// One line for the hub card.
+  tagline     String
+  status      ModeStatus
+  /// Card copy after the name: "live", "coming soon".
+  statusLabel String
+  /// What the endpoints are, singular: "person".
+  entityLabel String
+  /// What joins them, singular: "movie".
+  edgeLabel   String
+  sortOrder   Int        @default(0)
+  puzzles     Puzzle[]
+  solves      Solve[]
+}
+
+// One curated pair per mode per UTC date. Written only by the seed script, which
+// appends new pairs after the mode's last scheduled date, so past dates never
+// change. Entity ids are the source's own ids as text (TMDB numbers, MusicBrainz
+// UUIDs, Wikidata Q-ids). Credit data itself is NOT stored: it comes live from
+// the source API.
 model Puzzle {
   id          String   @id @default(cuid())
+  modeId      String
+  mode        GameMode @relation(fields: [modeId], references: [id])
   /// UTC date, yyyy-mm-dd.
-  date        String   @unique
-  personAId   Int
-  personAName String
-  personAImg  String?
-  personBId   Int
-  personBName String
-  personBImg  String?
-  /// Shortest known path in links (movies), computed once at seed time.
+  date        String
+  entityAId   String
+  entityAName String
+  entityAImg  String?
+  entityBId   String
+  entityBName String
+  entityBImg  String?
+  /// Shortest known path in links (edges), computed once at seed time.
   par         Int
   createdAt   DateTime @default(now())
   solves      Solve[]
+
+  @@unique([modeId, date])
 }
 
 enum VsPar {
@@ -34,12 +68,14 @@ enum VsPar {
   OVER
 }
 
-// Anonymous solve report: one row per device per date. deviceId is a random
-// UUID from the player's localStorage, not an account and not a credential.
+// Anonymous solve report: one row per device per mode per date. deviceId is a
+// random UUID from the player's localStorage, not an account and not a credential.
 model Solve {
   id       String   @id @default(cuid())
   puzzleId String
   puzzle   Puzzle   @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+  modeId   String
+  mode     GameMode @relation(fields: [modeId], references: [id])
   /// The UTC date played. Usually puzzle.date; differs only if the rotation wrapped.
   date     String
   deviceId String
@@ -47,8 +83,8 @@ model Solve {
   vsPar    VsPar
   solvedAt DateTime @default(now())
 
-  @@unique([date, deviceId])
-  @@index([date])
+  @@unique([modeId, date, deviceId])
+  @@index([modeId, date])
 }
 
 // Fixed-window rate limiter (src/lib/server/rate-limit.ts). Keep this model in every tool.

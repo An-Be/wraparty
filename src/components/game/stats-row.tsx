@@ -1,10 +1,9 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { readStorage, storageKeys, subscribeStorage } from "@/lib/local-store";
+import { readStats, subscribeStorage } from "@/lib/local-store";
 import { averageLinks, currentStreak, parseStats } from "@/lib/stats";
 
-const readStats = () => readStorage(storageKeys.stats);
 const serverStats = () => null;
 
 function Stat({ value, label }: { value: string; label: string }) {
@@ -16,9 +15,9 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-/** This device's streak and history. Lives in localStorage; no account. */
-export function StatsRow({ today }: { today: string }) {
-  const stats = parseStats(useSyncExternalStore(subscribeStorage, readStats, serverStats));
+/** This device's streak and history in one mode. Lives in localStorage; no account. */
+export function StatsRow({ mode, today }: { mode: string; today: string }) {
+  const stats = parseStats(useSyncExternalStore(subscribeStorage, () => readStats(mode), serverStats));
   const avg = averageLinks(stats);
   return (
     <div className="grid grid-cols-4 border border-ink">

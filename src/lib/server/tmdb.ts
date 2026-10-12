@@ -1,6 +1,6 @@
 import "server-only";
 import type { z } from "zod";
-import type { MovieResult, PersonResult } from "@/lib/search-schema";
+import type { SearchResult } from "@/lib/search-schema";
 import {
   movieWithCredits,
   releaseYear,
@@ -10,21 +10,19 @@ import {
   tmdbImage,
   type MovieWithCredits,
 } from "@/lib/tmdb";
+import { SourceError } from "./modes/source";
 
-// Server-side TMDB client. The token never leaves this module: routes call these
-// functions and return trimmed results, so no client bundle ever sees the key.
-// Responses are cached in Next's data cache for a short while.
+// Server-side TMDB client for the Movies mode. The token never leaves this
+// module: the adapter calls these functions and returns trimmed results, so no
+// client bundle ever sees the key. Responses are cached in Next's data cache.
 
 const SEARCH_TTL_SECONDS = 60 * 60;
 const CREDITS_TTL_SECONDS = 6 * 60 * 60;
 const MAX_RESULTS = 8;
 
-export class TmdbError extends Error {
-  constructor(
-    message: string,
-    readonly kind: "not-configured" | "upstream",
-  ) {
-    super(message);
+export class TmdbError extends SourceError {
+  constructor(message: string, kind: "not-configured" | "upstream") {
+    super("tmdb", message, kind);
   }
 }
 
@@ -60,8 +58,7 @@ async function tmdbGet<S extends z.ZodType>(
   return parsed.data;
 }
 
-
-export async function searchPeople(query: string): Promise<PersonResult[]> {
+export async function searchPeople(query: string): Promise<SearchResult[]> {
   const data = await tmdbGet(
     "/search/person",
     { query, include_adult: "false", language: "en-US", page: "1" },
@@ -71,10 +68,10 @@ export async function searchPeople(query: string): Promise<PersonResult[]> {
   return (data?.results ?? [])
     .filter((p) => !p.adult)
     .slice(0, MAX_RESULTS)
-    .map((p) => ({ id: p.id, name: p.name, img: tmdbImage(p.profile_path, "w92"), dept: p.known_for_department }));
+    .map((p) => ({ id: String(p.id), name: p.name, meta: p.known_for_department, img: tmdbImage(p.profile_path, "w92") }));
 }
 
-export async function searchMovies(query: string): Promise<MovieResult[]> {
+export async function searchMovies(query: string): Promise<SearchResult[]> {
   const data = await tmdbGet(
     "/search/movie",
     { query, include_adult: "false", language: "en-US", page: "1" },
@@ -84,17 +81,13 @@ export async function searchMovies(query: string): Promise<MovieResult[]> {
   return (data?.results ?? [])
     .filter((m) => !m.adult && !m.video)
     .slice(0, MAX_RESULTS)
-    .map((m) => ({ id: m.id, title: m.title, year: releaseYear(m.release_date), img: tmdbImage(m.poster_path, "w92") }));
+    .map((m) => {
+      const year = releaseYear(m.release_date);
+      return { id: String(m.id), name: m.title, meta: year ? String(year) : null, img: tmdbImage(m.poster_path, "w92") };
+    });
 }
 
 /** A movie with its full cast and crew, or null if TMDB doesn't know the id. */
 export async function getMovie(id: number): Promise<MovieWithCredits | null> {
   return tmdbGet(`/movie/${id}`, { append_to_response: "credits", language: "en-US" }, movieWithCredits, CREDITS_TTL_SECONDS);
-}
-
-/** The response for a route whose TMDB call failed: logged here, generic to the player. */
-export function tmdbUnavailable(error: unknown): Response {
-  if (error instanceof TmdbError) console.error(`[tmdb] ${error.kind}: ${error.message}`);
-  else console.error("[tmdb] unexpected error", error);
-  return Response.json({ error: "Movie data is unavailable right now. Try again in a minute." }, { status: 503 });
 }

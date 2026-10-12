@@ -17,4 +17,4 @@ GRANT USAGE ON SCHEMA public TO APP_ROLE;
 -- One line per app table. Extend this every time a migration adds a table.
 -- The build-time drift check (scripts/db-check.mjs) only sees tables this role
 -- has privileges on, so a missing grant shows up as drift and fails the build.
-GRANT SELECT, INSERT, UPDATE, DELETE ON "Puzzle", "Solve", "RateLimitHit" TO APP_ROLE;
+GRANT SELECT, INSERT, UPDATE, DELETE ON "GameMode", "Puzzle", "Solve", "RateLimitHit" TO APP_ROLE;

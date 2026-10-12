@@ -39,11 +39,19 @@ export function subscribeStorage(listener: () => void): () => void {
   };
 }
 
+// Stats and saved games are per mode; the device id is shared across modes.
 export const storageKeys = {
-  stats: "wraparty:stats",
+  stats: (mode: string) => `wraparty:${mode}:stats`,
   device: "wraparty:device",
-  game: (date: string) => `wraparty:game:${date}`,
+  game: (mode: string, date: string) => `wraparty:${mode}:game:${date}`,
 };
+
+/** Before modes, Movies stats lived under one key. Read it until Movies has its own. */
+export const legacyStatsKey: Record<string, string> = { movies: "wraparty:stats" };
+
+export function readStats(mode: string): string | null {
+  return readStorage(storageKeys.stats(mode)) ?? (Object.hasOwn(legacyStatsKey, mode) ? readStorage(legacyStatsKey[mode]) : null);
+}
 
 function uuidV4(): string {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
