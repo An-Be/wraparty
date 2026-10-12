@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { Game } from "@/components/game/game";
 import { HeaderStreak } from "@/components/game/header-streak";
 import { PairHero } from "@/components/game/pair-hero";
-import { ComingSoon } from "@/components/hub/coming-soon";
 import { ModeCredit } from "@/components/site/mode-credit";
 import { SettingUp } from "@/components/site/setting-up";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -14,7 +13,7 @@ import type { PuzzleProps } from "@/lib/chain";
 import { utcDateKey } from "@/lib/dates";
 import { gameIsOpen } from "@/lib/server/launch";
 import { getLiveMode } from "@/lib/server/modes";
-import { getAggregates, getMode, getPuzzleForDate } from "@/lib/server/puzzles";
+import { getAggregates, getPuzzleForDate } from "@/lib/server/puzzles";
 import { isWellFormedSlug, modeCopy } from "@/modes";
 
 export async function generateMetadata({ params }: PageProps<"/[mode]">): Promise<Metadata> {
@@ -23,20 +22,17 @@ export async function generateMetadata({ params }: PageProps<"/[mode]">): Promis
   return copy ? { title: `${site.name} ${copy.name}` } : {};
 }
 
-// Today's puzzle in one mode. Modes on the hub that aren't playable yet get a
-// coming-soon page; anything else is a 404.
+// Today's puzzle in one live mode. Anything else is a 404.
 export default async function ModePage({ params }: PageProps<"/[mode]">) {
   if (!gameIsOpen()) return <SettingUp />;
 
   const { mode: slug } = await params;
   if (!isWellFormedSlug(slug)) notFound();
 
-  const card = await getMode(slug);
-  if (!card) notFound();
-
+  // Only live modes have a page; planned ones aren't named anywhere yet.
   const mode = await getLiveMode(slug);
   const copy = modeCopy(slug);
-  if (!mode || !copy) return <ComingSoon name={card.name} tagline={card.tagline} />;
+  if (!mode || !copy) notFound();
 
   const today = utcDateKey();
   const puzzle = await getPuzzleForDate(mode.id, today);

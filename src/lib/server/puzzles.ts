@@ -73,24 +73,20 @@ export type ModeCard = {
   name: string;
   tagline: string;
   status: "LIVE" | "SOON";
-  /** "live", "coming soon". */
+  /** "live" for the hub card. */
   statusLabel: string;
   entityLabel: string;
   edgeLabel: string;
 };
 
-/** Every mode for the hub, live first by sortOrder. */
-export function getModes(): Promise<ModeCard[]> {
+/**
+ * Live modes for the hub, by sortOrder. Modes that aren't live stay unlisted:
+ * the hub only promises "more coming soon", never which.
+ */
+export function getLiveModes(): Promise<ModeCard[]> {
   return db.gameMode.findMany({
+    where: { status: "LIVE" },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    select: { slug: true, name: true, tagline: true, status: true, statusLabel: true, entityLabel: true, edgeLabel: true },
-  });
-}
-
-/** One mode's card, live or not, for /[mode]. */
-export function getMode(slug: string): Promise<ModeCard | null> {
-  return db.gameMode.findUnique({
-    where: { slug },
     select: { slug: true, name: true, tagline: true, status: true, statusLabel: true, entityLabel: true, edgeLabel: true },
   });
 }

@@ -154,8 +154,9 @@ npx prisma studio
 ## This tool
 
 **Wraparty**: a daily connection-games arcade. The hub at `/` lists game modes;
-each live mode plays at `/[mode]` (Movies is live; Music, Art and Anime
-show "coming soon" cards, which double as a signal for what to build next). One pair per mode per UTC day, same for everyone. Players chain
+each live mode plays at `/[mode]` (Movies is live). Modes that aren't live
+(Music, Art, Anime are planned) are never named on the site: the hub just says
+"More coming soon." and their URLs 404. One pair per mode per UTC day, same for everyone. Players chain
 entity → via → entity until they reach the target; fewest links (vias) wins.
 Scored against par in tiers (Under par / Par / Over par). No login, no AI.
 
@@ -198,8 +199,8 @@ Scored against par in tiers (Under par / Par / Over par). No login, no AI.
 
 ### Routes
 
-- `/` hub; `/[mode]` today's puzzle (server-rendered), chain builder, result
-  screen; coming-soon page for SOON modes
+- `/` hub (live modes plus "More coming soon."); `/[mode]` today's puzzle
+  (server-rendered), chain builder, result screen; 404 for any mode not live
 - `GET /api/puzzle/today?mode=`
 - `GET /api/search?mode=&kind=entity|via&q=` (rate limited)
 - `POST /api/puzzles/[date]/validate-step?mode=` `{fromEntityId, viaId}` or `{viaId, toEntityId}`
@@ -246,9 +247,10 @@ spot (par 1 is trivial, par 5+ is a slog). Same par range for every mode.
   to action (the primary Button) and the daily puzzle number, nothing else.
   `error` is a darker red in light mode and a paler one in dark mode so an error
   never reads as a button.
-- The footer has no author line (no name or portfolio link on Wraparty).
-- Voice: playful but brief, no em dashes. Mode cards read "Movies · live",
-  "Music · coming soon" (`GameMode.statusLabel`). Every mode ends on the same
+- The footer has no author line (no name or portfolio link on Wraparty). It
+  carries "More from the same shelf:" with sibling apps by name (`site.shelf`).
+- Voice: playful but brief, no em dashes. The live mode card reads "Movies · live"
+  (`GameMode.statusLabel`). Every mode ends on the same
   sign-off: "That's a wrap for today. See you tomorrow."
 - TMDB images use plain `<img>` (`src/components/game/photo.tsx`): `next/image`
   sets an inline style the nonce CSP blocks. `image.tmdb.org` is in `img-src`.
