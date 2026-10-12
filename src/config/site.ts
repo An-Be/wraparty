@@ -7,11 +7,6 @@ export const site = {
   tagline: "New pairs every day at midnight UTC.",
   /** The brand line: hub headline and share-card copy. */
   slogan: "A new game every day.",
-  /** "More from the same shelf" in the footer: sibling apps by name, no author line. */
-  shelf: [
-    { name: "Tab Math", url: "https://tabmath.com" },
-    { name: "TagYourTurn", url: "https://tagyourturn.com" },
-  ],
   /** Browser UI color. Paper white keeps the monochrome look. */
   themeColor: "#ffffff",
   /** Browser UI color in dark mode; matches --color-paper there. */

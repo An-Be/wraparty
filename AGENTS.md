@@ -247,8 +247,8 @@ spot (par 1 is trivial, par 5+ is a slog). Same par range for every mode.
   to action (the primary Button) and the daily puzzle number, nothing else.
   `error` is a darker red in light mode and a paler one in dark mode so an error
   never reads as a button.
-- The footer has no author line (no name or portfolio link on Wraparty). It
-  carries "More from the same shelf:" with sibling apps by name (`site.shelf`).
+- The footer has no author line and no links to sibling apps (no name or
+  portfolio link on Wraparty; other apps would read as more games).
 - Voice: playful but brief, no em dashes. The live mode card reads "Movies · live"
   (`GameMode.statusLabel`). Every mode ends on the same
   sign-off: "That's a wrap for today. See you tomorrow."
