@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Shell } from "@/components/ui/shell";
+import { site } from "@/config/site";
 import { utcDateKey } from "@/lib/dates";
 import { gameIsOpen } from "@/lib/server/launch";
 import { getModes } from "@/lib/server/puzzles";
@@ -22,7 +23,7 @@ export default async function Hub() {
       <Shell>
         <main className="flex flex-1 flex-col gap-10 py-8">
           <div className="flex flex-col gap-3">
-            <h1 className="display text-5xl">Daily connection games.</h1>
+            <h1 className="display text-5xl">{site.slogan}</h1>
             <p className="text-sm text-mute">
               One pair a day per game, same for everyone. Link them in as few steps as you can.
             </p>

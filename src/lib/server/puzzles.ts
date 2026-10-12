@@ -73,6 +73,8 @@ export type ModeCard = {
   name: string;
   tagline: string;
   status: "LIVE" | "SOON";
+  /** "live", "tuning up", "in rehearsal". */
+  statusLabel: string;
   entityLabel: string;
   edgeLabel: string;
 };
@@ -81,7 +83,7 @@ export type ModeCard = {
 export function getModes(): Promise<ModeCard[]> {
   return db.gameMode.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    select: { slug: true, name: true, tagline: true, status: true, entityLabel: true, edgeLabel: true },
+    select: { slug: true, name: true, tagline: true, status: true, statusLabel: true, entityLabel: true, edgeLabel: true },
   });
 }
 
@@ -89,6 +91,6 @@ export function getModes(): Promise<ModeCard[]> {
 export function getMode(slug: string): Promise<ModeCard | null> {
   return db.gameMode.findUnique({
     where: { slug },
-    select: { slug: true, name: true, tagline: true, status: true, entityLabel: true, edgeLabel: true },
+    select: { slug: true, name: true, tagline: true, status: true, statusLabel: true, entityLabel: true, edgeLabel: true },
   });
 }

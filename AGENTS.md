@@ -154,8 +154,8 @@ npx prisma studio
 ## This tool
 
 **Wraparty**: a daily connection-games arcade. The hub at `/` lists game modes;
-each live mode plays at `/[mode]` (Movies is live; Music, Art and Anime show
-"coming soon"). One pair per mode per UTC day, same for everyone. Players chain
+each live mode plays at `/[mode]` (Movies is live; Music and Sports show
+"coming soon" cards, which double as a signal for what to build next). One pair per mode per UTC day, same for everyone. Players chain
 entity → via → entity until they reach the target; fewest links (vias) wins.
 Scored against par in tiers (Under par / Par / Over par). No login, no AI.
 
@@ -225,6 +225,14 @@ cached in `scripts/.tmdb-cache` so re-runs are cheap.
 ### Documented exceptions
 
 - No secret links: `secretPathPrefixes` is empty and `site.indexable` is true.
+- Brand color: marquee red (`marquee` / `on-marquee` tokens) for the mark, calls
+  to action (the primary Button) and the daily puzzle number, nothing else.
+  `error` is a darker red in light mode and a paler one in dark mode so an error
+  never reads as a button.
+- The footer has no author line (no name or portfolio link on Wraparty).
+- Voice: playful but brief, no em dashes. Mode cards read "Movies · live",
+  "Music · tuning up" (`GameMode.statusLabel`). Every mode ends on the same
+  sign-off: "That's a wrap for today. See you tomorrow."
 - TMDB images use plain `<img>` (`src/components/game/photo.tsx`): `next/image`
   sets an inline style the nonce CSP blocks. `image.tmdb.org` is in `img-src`.
 - `src/instrumentation-client.ts` sets Zod to `jitless` so its eval probe doesn't

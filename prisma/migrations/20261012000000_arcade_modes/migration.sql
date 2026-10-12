@@ -11,6 +11,7 @@ CREATE TABLE "GameMode" (
     "name" TEXT NOT NULL,
     "tagline" TEXT NOT NULL,
     "status" "ModeStatus" NOT NULL,
+    "statusLabel" TEXT NOT NULL,
     "entityLabel" TEXT NOT NULL,
     "edgeLabel" TEXT NOT NULL,
     "sortOrder" INTEGER NOT NULL DEFAULT 0,
@@ -21,12 +22,12 @@ CREATE TABLE "GameMode" (
 -- CreateIndex
 CREATE UNIQUE INDEX "GameMode_slug_key" ON "GameMode"("slug");
 
--- Seed the modes from the spec. Only Movies is live.
-INSERT INTO "GameMode" ("id", "slug", "name", "tagline", "status", "entityLabel", "edgeLabel", "sortOrder") VALUES
-    ('mode_movies', 'movies', 'Movies', 'Connect two people through the movies they made.', 'LIVE', 'person', 'movie', 0),
-    ('mode_music', 'music', 'Music', 'Artists through collaborations, bands and producers.', 'SOON', 'artist', 'collaboration', 1),
-    ('mode_art', 'art', 'Art', 'Artists through movements, teachers and galleries.', 'SOON', 'artist', 'connection', 2),
-    ('mode_anime', 'anime', 'Anime', 'Voice actors through the shows they voiced.', 'SOON', 'voice actor', 'show', 3);
+-- Seed the modes from the spec. Only Movies is live; the rest are "coming
+-- soon" cards, which double as a signal for what to build next.
+INSERT INTO "GameMode" ("id", "slug", "name", "tagline", "status", "statusLabel", "entityLabel", "edgeLabel", "sortOrder") VALUES
+    ('mode_movies', 'movies', 'Movies', 'Connect two people through the movies they made.', 'LIVE', 'live', 'person', 'movie', 0),
+    ('mode_music', 'music', 'Music', 'Artists through collaborations, bands and producers.', 'SOON', 'tuning up', 'artist', 'collaboration', 1),
+    ('mode_sports', 'sports', 'Sports', 'Players through the teams they shared.', 'SOON', 'in rehearsal', 'player', 'team', 2);
 
 -- Puzzle: person* becomes entity*, ids become text, and every row joins Movies.
 ALTER TABLE "Puzzle" RENAME COLUMN "personAId" TO "entityAId";

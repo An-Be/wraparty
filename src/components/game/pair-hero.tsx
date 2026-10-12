@@ -10,7 +10,8 @@ export function PairHero({ puzzle, copy }: { puzzle: PuzzleProps; copy: Pick<Mod
     <section className="flex flex-col gap-5">
       <div className="flex items-baseline justify-between gap-4">
         <p className="label text-mute">
-          {copy.name} · No. {String(puzzle.number).padStart(3, "0")} · {displayDate(puzzle.date)}
+          {copy.name} · <span className="text-marquee">No. {String(puzzle.number).padStart(3, "0")}</span> ·{" "}
+          {displayDate(puzzle.date)}
         </p>
         <p className="label">Par {puzzle.par}</p>
       </div>

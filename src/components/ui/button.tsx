@@ -11,7 +11,8 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "border-ink bg-ink text-paper hover:border-mute hover:bg-mute active:bg-ink",
+        // Calls to action are marquee red, the brand's one accent.
+        primary: "border-marquee bg-marquee text-on-marquee hover:brightness-90 active:brightness-100",
         outline: "border-ink bg-paper text-ink hover:bg-wash active:bg-ink active:text-paper",
         ghost: "border-transparent bg-transparent text-mute underline-offset-4 hover:text-ink hover:underline",
       },
