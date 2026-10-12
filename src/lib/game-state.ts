@@ -1,18 +1,15 @@
 import { z } from "zod";
-import type { ChainNode, PersonNode } from "./chain";
+import { nodeId, type ChainNode } from "./chain";
 
-// Today's game as saved on the device, so a reload picks up where you left off.
+// Today's game in one mode as saved on the device, so a reload picks up where you left off.
 
-const nodeSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("person"), id: z.number().int(), name: z.string(), img: z.string().nullable() }),
-  z.object({
-    kind: z.literal("movie"),
-    id: z.number().int(),
-    title: z.string(),
-    year: z.number().int().nullable(),
-    img: z.string().nullable(),
-  }),
-]);
+const nodeSchema = z.object({
+  kind: z.enum(["entity", "via"]),
+  id: nodeId,
+  name: z.string(),
+  meta: z.string().nullable().catch(null),
+  img: z.string().nullable().catch(null),
+});
 
 const gameSchema = z.object({
   chain: z.array(nodeSchema).min(1),
@@ -24,18 +21,18 @@ const gameSchema = z.object({
 
 export type GameState = { chain: ChainNode[]; counted: boolean; reported: boolean };
 
-export function freshGame(start: PersonNode): GameState {
+export function freshGame(start: ChainNode): GameState {
   return { chain: [start], counted: false, reported: false };
 }
 
 /** Saved state for today's puzzle, or a fresh game if it's missing, broken or for another pair. */
-export function parseGame(raw: string | null, start: PersonNode): GameState {
+export function parseGame(raw: string | null, start: ChainNode): GameState {
   if (!raw) return freshGame(start);
   try {
     const parsed = gameSchema.safeParse(JSON.parse(raw));
     if (!parsed.success) return freshGame(start);
     const first = parsed.data.chain[0];
-    if (first.kind !== "person" || first.id !== start.id) return freshGame(start);
+    if (first.kind !== "entity" || first.id !== start.id) return freshGame(start);
     return parsed.data;
   } catch {
     return freshGame(start);

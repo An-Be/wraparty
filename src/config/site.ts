@@ -2,9 +2,9 @@
 // Everything user-facing that names the tool reads from here.
 export const site = {
   name: "Wraparty",
-  description: "Connect two people through the movies they made. One puzzle a day, same for everyone.",
+  description: "Daily connection games. Link two people through movies (more modes coming). One pair a day, same for everyone.",
   /** Shown in the footer. Keep it short. */
-  tagline: "A new pair every day at midnight UTC.",
+  tagline: "New pairs every day at midnight UTC.",
   /** Footer credit link. */
   author: { name: "Andrea", url: "https://andreaberrocal.com" },
   /** Browser UI color. Paper white keeps the monochrome look. */

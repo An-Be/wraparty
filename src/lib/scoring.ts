@@ -1,4 +1,4 @@
-import { nodeLabel, type ChainNode } from "./chain";
+import type { ChainNode } from "./chain";
 import { shareDateLabel } from "./dates";
 
 // Friendly scoring: tiers, not raw numbers. Matches the VsPar enum in schema.prisma.
@@ -33,22 +33,25 @@ function surname(name: string): string {
 }
 
 export function shareText({
+  modeName,
   date,
-  personAName,
-  personBName,
+  entityAName,
+  entityBName,
   par,
   chain,
   url,
 }: {
+  /** "Movies": the share line reads "Wraparty Movies 10/09: ..." */
+  modeName: string;
   date: string;
-  personAName: string;
-  personBName: string;
+  entityAName: string;
+  entityBName: string;
   par: number;
   chain: readonly ChainNode[];
   url?: string;
 }): string {
-  const links = chain.filter((n) => n.kind === "movie").length;
-  const head = `Wraparty ${shareDateLabel(date)}: ${surname(personAName)} → ${surname(personBName)} in ${links} (par ${par}) ${emojiGrid(links, par)}`;
-  const path = chain.map(nodeLabel).join(" → ");
+  const links = chain.filter((n) => n.kind === "via").length;
+  const head = `Wraparty ${modeName} ${shareDateLabel(date)}: ${surname(entityAName)} → ${surname(entityBName)} in ${links} (par ${par}) ${emojiGrid(links, par)}`;
+  const path = chain.map((n) => n.name).join(" → ");
   return [head, path, url].filter(Boolean).join("\n");
 }

@@ -24,7 +24,7 @@ export function Field({ htmlFor, label, hint, error, className, children }: Fiel
       </label>
       {children}
       {desc ? (
-        <p id={`${htmlFor}-desc`} className={cn("text-xs", error ? "text-ink" : "text-mute")} role={error ? "alert" : undefined}>
+        <p id={`${htmlFor}-desc`} className={cn("text-xs", error ? "text-error" : "text-mute")} role={error ? "alert" : undefined}>
           {desc}
         </p>
       ) : null}

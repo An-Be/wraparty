@@ -24,20 +24,21 @@ describe("emojiGrid", () => {
 describe("shareText", () => {
   it("builds the headline, the path and the link", () => {
     const chain: ChainNode[] = [
-      { kind: "person", id: 1, name: "Meryl Streep", img: null },
-      { kind: "movie", id: 10, title: "Movie X", year: 2000, img: null },
-      { kind: "person", id: 2, name: "Keanu Reeves", img: null },
+      { kind: "entity", id: "1", name: "Meryl Streep", meta: null, img: null },
+      { kind: "via", id: "10", name: "Movie X", meta: "2000", img: null },
+      { kind: "entity", id: "2", name: "Keanu Reeves", meta: null, img: null },
     ];
     const text = shareText({
+      modeName: "Movies",
       date: "2026-10-09",
-      personAName: "Meryl Streep",
-      personBName: "Keanu Reeves",
+      entityAName: "Meryl Streep",
+      entityBName: "Keanu Reeves",
       par: 1,
       chain,
       url: "https://wraparty.example",
     });
     expect(text).toBe(
-      "Wraparty 10/09: Streep → Reeves in 1 (par 1) 🟩⬜⬜\nMeryl Streep → Movie X → Keanu Reeves\nhttps://wraparty.example",
+      "Wraparty Movies 10/09: Streep → Reeves in 1 (par 1) 🟩⬜⬜\nMeryl Streep → Movie X → Keanu Reeves\nhttps://wraparty.example",
     );
   });
 });

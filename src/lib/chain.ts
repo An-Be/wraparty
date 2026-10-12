@@ -1,66 +1,81 @@
 import { z } from "zod";
 
-// The chain a player builds: person -> movie -> person -> ... -> target person.
-// Shared by the chain builder (client) and the API routes (validation).
+// The chain a player builds, for any game mode: entity -> via -> entity -> ...
+// -> target entity. In Movies, entities are people and vias are movies; in
+// Music they'd be artists and collaborations. The engine never knows which:
+// labels come from the mode (src/modes/), facts from its server adapter
+// (src/lib/server/modes/). Shared by the chain builder and the API routes.
 
-export type PersonNode = { kind: "person"; id: number; name: string; img: string | null };
-export type MovieNode = { kind: "movie"; id: number; title: string; year: number | null; img: string | null };
-export type ChainNode = PersonNode | MovieNode;
+export type NodeKind = "entity" | "via";
 
-/** What the page hands the client about today's puzzle. */
+/** One step in a chain. `meta` is a short qualifier, e.g. a movie's year. */
+export type ChainNode = { kind: NodeKind; id: string; name: string; meta: string | null; img: string | null };
+
+export type EntityRef = { id: string; name: string; img: string | null };
+
+/** What a page hands the client about today's puzzle in one mode. */
 export type PuzzleProps = {
+  mode: string;
   date: string;
   number: number;
   par: number;
-  personA: { id: number; name: string; img: string | null };
-  personB: { id: number; name: string; img: string | null };
+  entityA: EntityRef;
+  entityB: EntityRef;
 };
+
+/** Singular and plural nouns for a mode's two node kinds, for generic copy. */
+export type KindLabels = { entity: string; entities: string; via: string; vias: string };
 
 /** Longest chain we accept. Far past any sensible par; caps validation work. */
 export const MAX_LINKS = 12;
 
-/** Links are the movies in the chain. */
-export function linksOf(chain: readonly { kind: ChainNode["kind"] }[]): number {
-  return chain.filter((n) => n.kind === "movie").length;
+/** Links are the vias (movies) in the chain. */
+export function linksOf(chain: readonly { kind: NodeKind }[]): number {
+  return chain.filter((n) => n.kind === "via").length;
 }
 
-export function nextKind(chain: readonly ChainNode[]): ChainNode["kind"] {
-  return chain.at(-1)?.kind === "person" ? "movie" : "person";
+export function nextKind(chain: readonly ChainNode[]): NodeKind {
+  return chain.at(-1)?.kind === "entity" ? "via" : "entity";
 }
 
-export function isSolved(chain: readonly ChainNode[], targetId: number): boolean {
+export function isSolved(chain: readonly ChainNode[], targetId: string): boolean {
   const last = chain.at(-1);
-  return chain.length > 1 && last?.kind === "person" && last.id === targetId;
-}
-
-export function nodeLabel(node: ChainNode): string {
-  return node.kind === "person" ? node.name : node.title;
+  return chain.length > 1 && last?.kind === "entity" && last.id === targetId;
 }
 
 /** A pick that's already in the chain goes nowhere new; say so instead of asking the server. */
-export function repeatReason(chain: readonly ChainNode[], pick: { kind: ChainNode["kind"]; id: number }): string | null {
+export function repeatReason(
+  chain: readonly ChainNode[],
+  pick: { kind: NodeKind; id: string },
+  labels: KindLabels,
+): string | null {
   const seen = chain.find((n) => n.kind === pick.kind && n.id === pick.id);
   if (!seen) return null;
-  return pick.kind === "person"
-    ? `${nodeLabel(seen)} is already in your chain. Pick someone new.`
-    : `${nodeLabel(seen)} is already in your chain. Pick another movie.`;
+  return `${seen.name} is already in your chain. Pick another ${pick.kind === "entity" ? labels.entity : labels.via}.`;
 }
 
 // ---- Request schemas ---------------------------------------------------------
 
-const tmdbId = z.number({ error: "Pick from the list." }).int().positive().max(2_147_483_647);
+/** Source ids as text: TMDB numbers, MusicBrainz UUIDs, Wikidata Q-ids. */
+export const nodeId = z
+  .string({ error: "Pick from the list." })
+  .regex(/^[A-Za-z0-9._:-]{1,64}$/, "Pick from the list.");
 
 export const validateStepSchema = z.union(
-  [z.object({ fromPersonId: tmdbId, movieId: tmdbId }), z.object({ movieId: tmdbId, toPersonId: tmdbId })],
+  [z.object({ fromEntityId: nodeId, viaId: nodeId }), z.object({ viaId: nodeId, toEntityId: nodeId })],
   { error: "Pick from the list." },
 );
 export type ValidateStepBody = z.infer<typeof validateStepSchema>;
 
-export type ValidateStepResult =
-  | { valid: true; node: ChainNode }
-  | { valid: false; code: "not-credited" | "not-a-role" | "not-found"; reason: string };
+/**
+ * not-linked: the entity isn't joined to the via at all.
+ * not-counted: it is, but not in a way the mode counts (Movies: playing yourself).
+ */
+export type RejectCode = "not-linked" | "not-counted" | "not-found";
 
-export const pathStepSchema = z.object({ kind: z.enum(["person", "movie"]), id: tmdbId });
+export type ValidateStepResult = { valid: true; node: ChainNode } | { valid: false; code: RejectCode; reason: string };
+
+export const pathStepSchema = z.object({ kind: z.enum(["entity", "via"]), id: nodeId });
 export type PathStep = z.infer<typeof pathStepSchema>;
 
 export const solveSchema = z.object({
@@ -72,14 +87,14 @@ export const solveSchema = z.object({
 });
 export type SolveBody = z.infer<typeof solveSchema>;
 
-/** Shape check for a submitted path: alternates person/movie, starts at A, ends at B. */
-export function pathShapeError(path: readonly PathStep[], personAId: number, personBId: number): string | null {
-  if (path.length % 2 === 0) return "Your chain has to end on a person.";
+/** Shape check for a submitted path: alternates entity/via, starts at A, ends at B. */
+export function pathShapeError(path: readonly PathStep[], entityAId: string, entityBId: string): string | null {
+  if (path.length % 2 === 0) return "Your chain has to end where it's going.";
   for (let i = 0; i < path.length; i++) {
-    if (path[i].kind !== (i % 2 === 0 ? "person" : "movie")) return "Your chain has to alternate people and movies.";
+    if (path[i].kind !== (i % 2 === 0 ? "entity" : "via")) return "Your chain is out of order.";
   }
-  if (path[0].id !== personAId) return "Your chain has to start with today's first person.";
-  if (path.at(-1)!.id !== personBId) return "Your chain has to end with today's second person.";
+  if (path[0].id !== entityAId) return "Your chain has to start with today's first pick.";
+  if (path.at(-1)!.id !== entityBId) return "Your chain has to end with today's target.";
   const keys = new Set(path.map((s) => `${s.kind}:${s.id}`));
   if (keys.size !== path.length) return "Your chain repeats a step.";
   return null;

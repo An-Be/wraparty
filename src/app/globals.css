@@ -14,6 +14,8 @@
   /* Hairline for site chrome (the header rule). Content borders stay ink. */
   --color-rule: #e5e5e5;
   --color-line: #000000;
+  /* The one color in the system: errors only (rejected input, failed actions). */
+  --color-error: #c8231a;
   --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   --radius-xs: 0px;
@@ -37,6 +39,7 @@
     --color-wash: #1c1c1c;
     --color-rule: #262626;
     --color-line: #f2f2f2;
+    --color-error: #ff6b5e;
   }
 }
 

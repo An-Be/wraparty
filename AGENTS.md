@@ -153,38 +153,57 @@ npx prisma studio
 
 ## This tool
 
-**Wraparty**: a daily movie-connection game. One pair of people per UTC day,
-same for everyone. Players chain person → movie → person until they reach
-person B; fewest links (movies) wins. Scored against par in tiers
-(Under par / Par / Over par). No login, no AI.
+**Wraparty**: a daily connection-games arcade. The hub at `/` lists game modes;
+each live mode plays at `/[mode]` (Movies is live; Music, Art and Anime show
+"coming soon"). One pair per mode per UTC day, same for everyone. Players chain
+entity → via → entity until they reach the target; fewest links (vias) wins.
+Scored against par in tiers (Under par / Par / Over par). No login, no AI.
 
-### Domain rules
+### Modes
+
+- The engine is mode-agnostic: `src/lib/chain.ts` works on `ChainNode
+  {kind: "entity" | "via", id: string, ...}`. In Movies, entities are people
+  and vias are movies.
+- A mode is: a `GameMode` row (slug, name, tagline, status LIVE/SOON), client
+  copy in `src/modes/<slug>.ts` (registered in `src/modes/index.ts`), a server
+  adapter in `src/lib/server/modes/<slug>.ts` (search, validateStep,
+  validatePath; registered in `src/lib/server/modes/index.ts`), its source's
+  credit in `src/components/site/mode-credit.tsx`, and a seed script.
+- A mode is playable only when it has an adapter **and** its row is LIVE
+  (`getLiveMode`). Every game API route takes `?mode=` and 404s otherwise.
+- Source failures throw a `SourceError` subclass; routes answer one generic 503
+  (`sourceUnavailable`).
+
+### Domain rules (Movies)
 
 - **Facts, not vibes.** A link counts when TMDB credits the person in the movie
   as cast in a real role, or as director. Self/archive-footage appearances don't
   count (`isCountableRole` in `src/lib/tmdb.ts`). Player validation uses full
   credit lists; only par uses the bounded graph (top 20 movies per person,
   top 15 billed cast + directors per movie).
-- **Par is computed once at seed time** (`scripts/seed-puzzles.ts`, bidirectional
-  BFS in `src/lib/par.ts`), never at runtime.
-- **Puzzle dates are append-only.** The seed script schedules new pairs after the
-  last scheduled date and refuses to overwrite one. When the list runs out,
-  `getPuzzleForDate` wraps through the list in date order (`wrappedIndex`).
+- **Par is computed once at seed time** (`scripts/seed-puzzles.ts`, the Movies
+  seeder; bidirectional BFS in `src/lib/par.ts`), never at runtime.
+- **Puzzle dates are append-only per mode** (`@@unique([modeId, date])`). The
+  seed script schedules new pairs after the mode's last scheduled date and
+  refuses to overwrite one. When a mode's list runs out, `getPuzzleForDate`
+  wraps through it in date order (`wrappedIndex`).
 - **Playable dates** are today and yesterday (UTC), so a game started before
   midnight can finish. No archive.
-- **Solves** are anonymous: one row per (date, deviceId), deviceId a random UUID
-  from localStorage. Links and tier are recomputed server-side from the
-  re-validated path. Streaks and stats live only in localStorage.
+- **Solves** are anonymous: one row per (mode, date, deviceId), deviceId a
+  random UUID from localStorage. Links and tier are recomputed server-side from
+  the re-validated path. Streaks and stats live only in localStorage, per mode
+  (`wraparty:<mode>:stats`; Movies falls back to the pre-modes `wraparty:stats`).
 - TMDB data is never stored, only cached briefly in Next's data cache. Only
-  curated pairs and solve aggregates live in Postgres.
+  curated pairs, modes and solve aggregates live in Postgres.
 
 ### Routes
 
-- `/` today's puzzle (server-rendered), chain builder, result screen
-- `GET /api/puzzle/today`
-- `GET /api/tmdb/search-person?q=`, `GET /api/tmdb/search-movie?q=` (proxy, rate limited)
-- `POST /api/puzzles/[date]/validate-step` `{fromPersonId, movieId}` or `{movieId, toPersonId}`
-- `POST /api/puzzles/[date]/solves` `{deviceId, path}`
+- `/` hub; `/[mode]` today's puzzle (server-rendered), chain builder, result
+  screen; coming-soon page for SOON modes
+- `GET /api/puzzle/today?mode=`
+- `GET /api/search?mode=&kind=entity|via&q=` (rate limited)
+- `POST /api/puzzles/[date]/validate-step?mode=` `{fromEntityId, viaId}` or `{viaId, toEntityId}`
+- `POST /api/puzzles/[date]/solves?mode=` `{deviceId, path}`
 
 ### Env
 
